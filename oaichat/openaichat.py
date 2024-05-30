@@ -62,7 +62,7 @@ class OaiChat:
             # user=self.user,
             messages=self.history,
             # temperature=0.7,
-            max_tokens=150,
+            max_tokens=4096,
             # top_p=1,
             # frequency_penalty=1,
             # presence_penalty=0
