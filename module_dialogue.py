@@ -25,11 +25,15 @@ from optparse import OptionParser
 ROBOT_PORT = 9559  # Robot
 ROBOT_IP = "pepper.local"  # Pepper default
 
+# NAOqi API “Sensitivity” Parameter, between 0 and 1 to adjust the detection threshold. At 0, the robot does not detect any sound.
+# At 1, it reacts to the slightest sound.
+
+MICROPHONE_SENSITIVITY = 0.05
 
 START_PROMPT = codecs.open(str(os.getenv('DIALOGUE_START_PROMPTFILE'), encoding='utf-8')
                            ).read() if os.path.isfile(str(os.getenv('DIALOGUE_START_PROMPTFILE'))) else None
 participantId = raw_input('Participant ID: ')
-ANIMATED_SPEECH = int(participantId) % 2 == 1
+ALIVE = int(participantId) % 2 == 1
 
 chatbot = OaiClient(user=participantId)
 chatbot.reset()
@@ -65,20 +69,25 @@ class DialogueModule(naoqi.ALModule):
 
         self.tablet = ALProxy('ALTabletService',  self.strNaoIp, ROBOT_PORT)
 
+        self.soundDetection = ALProxy(
+            "ALSoundDetection",  self.strNaoIp, ROBOT_PORT)
+
+        self.soundDetection.setParameter("Sensitivity", MICROPHONE_SENSITIVITY)
+
+        print("Microphone sensitivity set to %f" % MICROPHONE_SENSITIVITY)
+
         try:
             self.posture = ALProxy("ALRobotPosture", self.strNaoIp, ROBOT_PORT)
-            if ANIMATED_SPEECH:
+            if ALIVE:
                 self.aup = ALProxy("ALAnimatedSpeech",
                                    self.strNaoIp, ROBOT_PORT)
             else:
                 self.aup = ALProxy("ALTextToSpeech",
                                    self.strNaoIp, ROBOT_PORT)
 
-                languaguesAvailable = self.aup.getAvailableLanguages()
-                print("**********************  Available languages: %s" %
-                      languaguesAvailable)
-
-                # self.aup.setLanguage('Norwegian')
+                # languaguesAvailable = self.aup.getAvailableLanguages()
+                # print("**********************  Available languages: %s" %
+                #       languaguesAvailable
 
                 languagueInstalled = self.aup.getLanguage()
                 print("**********************  Installed language: %s" %
@@ -92,9 +101,9 @@ class DialogueModule(naoqi.ALModule):
                 voice = self.aup.getVoice()
                 print("**********************  Voice installed: %s" % voice)
 
-                self.aup.setVoice("naoenu")
+                # self.aup.setVoice("naoenu")
                 # self.aup.setVoice("naomnc")
-                # self.aup.setVoice("nora")
+                self.aup.setVoice("nora")
 
         except RuntimeError:
             print("Can't connect to Naoqi at ip \"" + self.strNaoIp + "\" on port " + str(ROBOT_PORT) + ".\n"
@@ -118,6 +127,7 @@ class DialogueModule(naoqi.ALModule):
     def configureSpeechRecognition(self):
         print("Module_dialogue.py configureSpeechRecognition")
         self.speechRecognition = ALProxy("SpeechRecognition")
+
         # self.speechRecognition.setLanguage("en-US")
 
         # self.speechRecognition.calibrate()
@@ -128,25 +138,28 @@ class DialogueModule(naoqi.ALModule):
             # one-shot recording for at least 5 seconds
             self.speechRecognition = ALProxy("SpeechRecognition")
             self.speechRecognition.start()
+
             self.speechRecognition.setHoldTime(5)
             self.speechRecognition.setIdleReleaseTime(1.7)
             self.speechRecognition.setMaxRecordingDuration(10)
             # self.speechRecognition.setLanguage("en-US")
             # self.speechRecognition.setLanguage("no-NO")
-            self.speechRecognition.setLanguage("nn-NO")
+            # self.speechRecognition.setLanguage("nn-NO")
             # self.speechRecognition.startRecording()
         else:
             print("True, auto-detection selected")
             # auto-detection
             self.speechRecognition = ALProxy("SpeechRecognition")
             # self.speechRecognition.start()
+            # self.speechRecognition.setParameter("Sensitivity", 0)
+
             self.speechRecognition.setHoldTime(3)
             self.speechRecognition.setIdleReleaseTime(2.0)
             self.speechRecognition.setMaxRecordingDuration(15)
             self.speechRecognition.setLookaheadDuration(0.5)
             # self.speechRecognition.setLanguage("en-US")
             # self.speechRecognition.setLanguage("no-NO")
-            self.speechRecognition.setLanguage("nn-NO")
+            # self.speechRecognition.setLanguage("nn-NO")
             # self.speechRecognition.calibrate()
             self.speechRecognition.setAutoDetectionThreshold(6)
             # self.speechRecognition.startRecording()
@@ -179,26 +192,28 @@ class DialogueModule(naoqi.ALModule):
         # return codecs.encode(s, 'ascii', 'ignore')
 
     def processRemote(self, signalName, message):
-        print('****************************** : point  1')
+        # print('****************************** : point  1')
         # message = self.encode(message)
-        print('****************************** : point  2')
+        # print('****************************** : point  2')
         # self.log.write('INP: ' + message + '\n')
 
         if message == 'error':
-            print('****************************** : point  3')
+            # print('****************************** : point  3')
             # print('Input not recognized, continue listen')
             return
         self.listen(False)
-        print('****************************** : point  4')
+        # print('****************************** : point  4')
         # received speech recognition result
         print("USER: \n" + message)
-        print('****************************** : point  5')
+        # print('****************************** : point  5')
         answer = ""
 
         # computing answer
         if message == 'error':
-            print('****************************** : point  6')
+            # print('****************************** : point  6')
+
             self.misunderstandings += 1
+
             if self.misunderstandings == 1:
                 answer = "I didn't understand, can you repeat?"
             elif self.misunderstandings == 2:
@@ -207,32 +222,44 @@ class DialogueModule(naoqi.ALModule):
                 answer = "Today I'm having troubles uderstanding what you are saying, I'm sorry"
             else:
                 answer = "Please repeat that."
-            print('****************************** : point  7')
+
+            # print('****************************** : point  7')
+
             print('ERROR, DEFAULT ANSWER:\n'+answer)
 
         else:
-            print('****************************** : point  8')
+            # print('****************************** : point  8')
+
             chatGPTresponse = chatbot.respond(message)
-            print('****************************** : point  9')
-            answer = chatGPTresponse
-            # answer = self.encode(chatGPTresponse)
-            print('****************************** : point  10')
+
+            # print('****************************** : point  9')
+            # answer = chatGPTresponse
+
+            answer = self.encode(chatGPTresponse)
+
+            # print('****************************** : point  10')
             self.misunderstandings = 0
+
             print('ROBOT:\n'+answer)
 
         # text to speech the answer
 
         # self.log.write('ANS: ' + answer + '\n')
 
-        self.tablet.showInputTextDialog(
-            "Answer: ", "Ok", "Cancel", answer, 300)
+        # self.tablet.showInputTextDialog(
+          #  "Answer: ", "Ok", "Cancel", answer, 300)
 
-        print('****************************** : point  11')
+        # print('****************************** : point  11')
+
         self.aup.say(answer)
-        print('****************************** : point  12')
+
+        # print('****************************** : point  12')
+
         self.react(answer)
-        print('****************************** : point  13')
+
+        # print('****************************** : point  13')
         # time.sleep(2)
+
         self.listen(True)
 
     def react(self, s):

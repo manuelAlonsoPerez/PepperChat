@@ -50,8 +50,8 @@ CALIBRATION_THRESHOLD_FACTOR = 1.5
 # RFC5646 language tag, e.g. "en-us", "de-de", "fr-fr",... <http://stackoverflow.com/a/14302134>
 
 # Change back to en-us here, module_dialogue.py and in Robot Settings app
-#  DEFAULT_LANGUAGE = "en-US"
-DEFAULT_LANGUAGE = "ru-RU"
+DEFAULT_LANGUAGE = "en-US"
+# DEFAULT_LANGUAGE = "no-NO"
 
 
 # write the recorded audio to "out.wav" before sending it to google. intended for debugging purposes
