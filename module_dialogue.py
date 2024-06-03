@@ -46,7 +46,9 @@ class DialogueModule(naoqi.ALModule):
 
     def __init__(self, strModuleName, strNaoIp):
         self.misunderstandings = 0
+
         # self.log = codecs.open('dialogue.log', 'a', encoding='utf-8')
+
         try:
             naoqi.ALModule.__init__(self, strModuleName)
             self.BIND_PYTHON(self.getName(), "callback")
@@ -61,49 +63,92 @@ class DialogueModule(naoqi.ALModule):
 
     def start(self):
         print("Module_dialogue.py start")
+
         self.configureSpeechRecognition()
+
         self.memory = naoqi.ALProxy("ALMemory", self.strNaoIp, ROBOT_PORT)
         self.memory.subscribeToEvent(
             "SpeechRecognition", self.getName(), "processRemote")
         print("INF: ReceiverModule: started!")
 
         self.tablet = ALProxy('ALTabletService',  self.strNaoIp, ROBOT_PORT)
-
+        
+        # Reducing Microphone sensitivity to reduce capturing background noise
+        
         self.soundDetection = ALProxy(
             "ALSoundDetection",  self.strNaoIp, ROBOT_PORT)
-
         self.soundDetection.setParameter("Sensitivity", MICROPHONE_SENSITIVITY)
-
         print("Microphone sensitivity set to %f" % MICROPHONE_SENSITIVITY)
+
+        # Getting Robot preferences
+        self.robotPereferences = ALProxy('ALPreferenceManager',  self.strNaoIp, ROBOT_PORT) 
+        preferenceDomains = self.robotPereferences.getDomainList()
+
+        print('\n\n Robot preference Domains: \n')
+        # printing the list using loop
+            
+        for x in range(len(preferenceDomains)):
+            print( preferenceDomains[x] + ' ,')
+
+        webPreferences = self.robotPereferences.getValueList('com.aldebaran.robotwebpage')
+
+        if(len(webPreferences) <= 0 ):
+            return 
+        else:
+            for x in range(len(webPreferences)):
+                print('\na')
+                for y in range(len(webPreferences[x])):
+                    print( webPreferences[y])
+        
+        wizardPreferences = self.robotPereferences.getValueList('com.aldebaran.wizard')
+        
+        if(len(wizardPreferences) <= 0 ):
+            return 
+        else:
+            for x in range(len(wizardPreferences)):
+                print('\nb')
+                for y in range(len(wizardPreferences[x])- 1):
+                    print( wizardPreferences[y])
+
+        robotLanguageWebPreference = 'English'
+
+        self.robotPereferences.setValue('com.aldebaran.robotwebpage', 'ChosenLanguage', robotLanguageWebPreference)
+
 
         try:
             self.posture = ALProxy("ALRobotPosture", self.strNaoIp, ROBOT_PORT)
+
+            # Participant Id is an Odd number
             if ALIVE:
                 self.aup = ALProxy("ALAnimatedSpeech",
                                    self.strNaoIp, ROBOT_PORT)
+            
+            # Participant Id is an even number
             else:
                 self.aup = ALProxy("ALTextToSpeech",
                                    self.strNaoIp, ROBOT_PORT)
 
-                # languaguesAvailable = self.aup.getAvailableLanguages()
-                # print("**********************  Available languages: %s" %
-                #       languaguesAvailable
+                languaguesAvailable = self.aup.getAvailableLanguages()
+                print("**********************  Available languages: %s" %
+                      languaguesAvailable)
+                
+                self.aup.setLanguage('English')
 
                 languagueInstalled = self.aup.getLanguage()
+                
                 print("**********************  Installed language: %s" %
                       languagueInstalled)
-
-                # self.aup.setLanguage("English")
 
                 voices = self.aup.getAvailableVoices()
                 print("**********************  Available voices: %s" % voices)
 
-                voice = self.aup.getVoice()
-                print("**********************  Voice installed: %s" % voice)
-
                 # self.aup.setVoice("naoenu")
                 # self.aup.setVoice("naomnc")
                 self.aup.setVoice("nora")
+
+                voice = self.aup.getVoice()
+                print("**********************  Voice installed: %s" % voice)
+
 
         except RuntimeError:
             print("Can't connect to Naoqi at ip \"" + self.strNaoIp + "\" on port " + str(ROBOT_PORT) + ".\n"
@@ -112,7 +157,9 @@ class DialogueModule(naoqi.ALModule):
         if START_PROMPT:
             # answer = self.encode(chatbot.respond(START_PROMPT))
             answer = chatbot.respond(START_PROMPT)
-            self.aup.say(answer)
+
+            print('\n ----Pepper Answering in %s \n' % languagueInstalled)
+            self.aup.say(answer, languagueInstalled)
         self.listen(True)
         print('Listening...')
 
@@ -151,7 +198,6 @@ class DialogueModule(naoqi.ALModule):
             # auto-detection
             self.speechRecognition = ALProxy("SpeechRecognition")
             # self.speechRecognition.start()
-            # self.speechRecognition.setParameter("Sensitivity", 0)
 
             self.speechRecognition.setHoldTime(3)
             self.speechRecognition.setIdleReleaseTime(2.0)
@@ -179,13 +225,12 @@ class DialogueModule(naoqi.ALModule):
             self.speechRecognition.pause()
 
     def encode(self, s):
-        print('****************************** : point  A')
-
+        #print('****************************** : point  A')
         # s = s.replace(u'å', 'a').replace(u'ä', 'a').replace(u'ö', 'o')
         # s = s.replace(u'ø', 'oe').replace(u'æ', 'a')
         encodedString = codecs.encode(s, 'utf-8')
 
-        print('****************************** : point  B')
+        #print('****************************** : point  B')
         print('****************************** : %s' % encodedString)
 
         return encodedString
@@ -301,9 +346,13 @@ def main():
                               pport)       # parent broker port
 
     try:
+        print('Module Dialoge debugging. # kill previous instance')
         p = ALProxy("dialogueModule")
         p.exit()  # kill previous instance
-    except:
+
+    except Exception as error:
+        print(
+            'Module Dialoge debugging. # Failed killing previous instance. %s' % error)
         pass
 
     audio = ALProxy("ALAudioDevice")
