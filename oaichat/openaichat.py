@@ -58,9 +58,9 @@ class OaiChat:
         # print(self.history)
         response = self.client.chat.completions.create(
             # Trained model in Manuel Account
-            model="ft:gpt-3.5-turbo-1106:techedge:odaconference:9UwYgLwU",
+            #model="ft:gpt-3.5-turbo-1106:techedge:odaconference:9UwYgLwU",
             # OTB model
-            # model="gpt-3.5-turbo-1106",
+            model="gpt-3.5-turbo-1106",
             # response_format={ "type": "json_object" },
             # user=self.user,
             messages=self.history,
