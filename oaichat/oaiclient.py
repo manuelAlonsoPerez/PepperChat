@@ -10,7 +10,7 @@
 # Created: June 2022.
 # License: Copyright reserved to the author.
 ###########################################################
-"""Zmq cloent interface for the OpenAI chatbot"""
+"""Zmq client interface for the OpenAI chatbot"""
 
 import zmq
 import sys
