@@ -22,6 +22,8 @@ import time
 import naoqi
 import re
 from optparse import OptionParser
+import langid
+
 ROBOT_PORT = 9559  # Robot
 ROBOT_IP = "pepper.local"  # Pepper default
 
@@ -72,48 +74,16 @@ class DialogueModule(naoqi.ALModule):
         print("INF: ReceiverModule: started!")
 
         self.tablet = ALProxy('ALTabletService',  self.strNaoIp, ROBOT_PORT)
-        
+
         # Reducing Microphone sensitivity to reduce capturing background noise
-        
         self.soundDetection = ALProxy(
             "ALSoundDetection",  self.strNaoIp, ROBOT_PORT)
         self.soundDetection.setParameter("Sensitivity", MICROPHONE_SENSITIVITY)
         print("Microphone sensitivity set to %f" % MICROPHONE_SENSITIVITY)
 
-        # Getting Robot preferences
-        self.robotPereferences = ALProxy('ALPreferenceManager',  self.strNaoIp, ROBOT_PORT) 
-        preferenceDomains = self.robotPereferences.getDomainList()
-
-        print('\n\n Robot preference Domains: \n')
-        # printing the list using loop
-            
-        for x in range(len(preferenceDomains)):
-            print( preferenceDomains[x] + ' ,')
-
-        webPreferences = self.robotPereferences.getValueList('com.aldebaran.robotwebpage')
-
-        if(len(webPreferences) <= 0 ):
-            return 
-        else:
-            for x in range(len(webPreferences)):
-                print('\na')
-                for y in range(len(webPreferences[x])):
-                    print( webPreferences[y])
-        
-        wizardPreferences = self.robotPereferences.getValueList('com.aldebaran.wizard')
-        
-        if(len(wizardPreferences) <= 0 ):
-            return 
-        else:
-            for x in range(len(wizardPreferences)):
-                print('\nb')
-                for y in range(len(wizardPreferences[x])- 1):
-                    print( wizardPreferences[y])
-
-        robotLanguageWebPreference = 'English'
-
-        self.robotPereferences.setValue('com.aldebaran.robotwebpage', 'ChosenLanguage', robotLanguageWebPreference)
-
+        # Robot preferences Proxy for changing the language
+        self.robotPereferences = ALProxy(
+            'ALPreferenceManager',  self.strNaoIp, ROBOT_PORT)
 
         try:
             self.posture = ALProxy("ALRobotPosture", self.strNaoIp, ROBOT_PORT)
@@ -122,7 +92,7 @@ class DialogueModule(naoqi.ALModule):
             if ALIVE:
                 self.aup = ALProxy("ALAnimatedSpeech",
                                    self.strNaoIp, ROBOT_PORT)
-            
+
             # Participant Id is an even number
             else:
                 self.aup = ALProxy("ALTextToSpeech",
@@ -131,11 +101,11 @@ class DialogueModule(naoqi.ALModule):
                 languaguesAvailable = self.aup.getAvailableLanguages()
                 print("**********************  Available languages: %s" %
                       languaguesAvailable)
-                
-                self.aup.setLanguage('English')
+
+                # self.aup.setLanguage('English')
 
                 languagueInstalled = self.aup.getLanguage()
-                
+
                 print("**********************  Installed language: %s" %
                       languagueInstalled)
 
@@ -148,7 +118,6 @@ class DialogueModule(naoqi.ALModule):
 
                 voice = self.aup.getVoice()
                 print("**********************  Voice installed: %s" % voice)
-
 
         except RuntimeError:
             print("Can't connect to Naoqi at ip \"" + self.strNaoIp + "\" on port " + str(ROBOT_PORT) + ".\n"
@@ -225,12 +194,12 @@ class DialogueModule(naoqi.ALModule):
             self.speechRecognition.pause()
 
     def encode(self, s):
-        #print('****************************** : point  A')
+        # print('****************************** : point  A')
         # s = s.replace(u'å', 'a').replace(u'ä', 'a').replace(u'ö', 'o')
         # s = s.replace(u'ø', 'oe').replace(u'æ', 'a')
         encodedString = codecs.encode(s, 'utf-8')
 
-        #print('****************************** : point  B')
+        # print('****************************** : point  B')
         print('****************************** : %s' % encodedString)
 
         return encodedString
@@ -248,8 +217,9 @@ class DialogueModule(naoqi.ALModule):
             return
         self.listen(False)
         # print('****************************** : point  4')
+
         # received speech recognition result
-        print("USER: \n" + message)
+        print(" ----- USER: \n" + message + '\n')
         # print('****************************** : point  5')
         answer = ""
 
@@ -285,7 +255,7 @@ class DialogueModule(naoqi.ALModule):
             # print('****************************** : point  10')
             self.misunderstandings = 0
 
-            print('ROBOT:\n'+answer)
+            print('---- ROBOT:\n' + answer + '\n')
 
         # text to speech the answer
 
@@ -314,6 +284,50 @@ class DialogueModule(naoqi.ALModule):
             self.posture.goToPosture("Stand", 1.0)
         elif re.match(".*I.*(lie|lyi).*down.*", s):  # Lying down
             self.posture.goToPosture("LyingBack", 1.0)
+
+    def changeRobotLanguage(self, language):
+        # Getting Robot preferences
+
+        preferenceDomains = self.robotPereferences.getDomainList()
+
+        print('\n\n Robot preference Domains: \n')
+        # printing the list using loop
+
+        for x in range(len(preferenceDomains)):
+            print(preferenceDomains[x] + ' ,')
+
+        webPreferences = self.robotPereferences.getValueList(
+            'com.aldebaran.robotwebpage')
+
+        if (len(webPreferences) <= 0):
+            return
+        else:
+            for x in range(len(webPreferences)):
+                print('\na')
+                for y in range(len(webPreferences[x])):
+                    print(webPreferences[y])
+
+        wizardPreferences = self.robotPereferences.getValueList(
+            'com.aldebaran.wizard')
+
+        if (len(wizardPreferences) <= 0):
+            return
+        else:
+            for x in range(len(wizardPreferences)):
+                print('\nb')
+                for y in range(len(wizardPreferences[x]) - 1):
+                    print(wizardPreferences[y])
+
+        robotLanguageWebPreference = language
+
+        self.robotPereferences.setValue(
+            'com.aldebaran.robotwebpage', 'ChosenLanguage', robotLanguageWebPreference)
+
+    def indentifyLanguage(selv, text):
+        clasiffyResult = langid.classify(text)
+        textLanguage = clasiffyResult[0]
+        print("The language for the given text is : %s  ." % textLanguage)
+        return textLanguage
 
 
 def main():

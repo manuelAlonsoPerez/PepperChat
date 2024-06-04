@@ -347,7 +347,7 @@ class SpeechRecognitionModule(ALModule):
         # copy slice to be thread safe!
 
         # TODO: make a job queue so we don't start a new thread for each recognition
-        
+
         threading.Thread(target=self.recognize, args=(slice.copy(), )).start()
 
         # reset flag
@@ -391,7 +391,7 @@ class SpeechRecognitionModule(ALModule):
         return
 
     def setLanguage(self, language=DEFAULT_LANGUAGE):
-        print('\n\n - Google speech languague set to: ' +  language + '\n\n')
+        print('\n\n - Google speech languague set to: ' + language + '\n\n')
         self.language = language
         return
 
@@ -442,7 +442,7 @@ class SpeechRecognitionModule(ALModule):
         try:
             print("Data sending to Google speech API for recognition.")
 
-            result = r.recognize_google( 
+            result = r.recognize_google(
                 audio_data=buffer, samplerate=SAMPLE_RATE, language=self.language)
             self.memory.raiseEvent("SpeechRecognition", result)
             print '\n\n ---RESULT returned from Google Speech ---: \n' + result + '\n\n'
