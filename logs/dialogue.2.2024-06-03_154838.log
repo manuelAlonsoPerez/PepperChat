@@ -1,4 +1,0 @@
-{"sending": {"handshake": "OaiClient", "time": "2024-06-03T15:48:38.012749"}},
-{"receiving": {"handshake": "ok", "time": "2024-06-03T15:48:38.014268"}},
-{"sending": {"reset": true, "user": "2", "time": "2024-06-03T15:48:38.014689"}},
-{"receiving": {"reset": "ok", "time": "2024-06-03T15:48:38.015659"}},

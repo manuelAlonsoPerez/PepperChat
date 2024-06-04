@@ -32,8 +32,9 @@ ROBOT_IP = "pepper.local"  # Pepper default
 
 MICROPHONE_SENSITIVITY = 0.05
 
-START_PROMPT = codecs.open(str(os.getenv('DIALOGUE_START_PROMPTFILE'), encoding='utf-8')
-                           ).read() if os.path.isfile(str(os.getenv('DIALOGUE_START_PROMPTFILE'))) else None
+# START_PROMPT = codecs.open(str(os.getenv('DIALOGUE_START_PROMPTFILE'), encoding='utf-8')
+#                          ).read() if os.path.isfile(str(os.getenv('DIALOGUE_START_PROMPTFILE'))) else None
+
 # participantId = raw_input('Participant ID: ')
 # ALIVE = int(participantId) % 2 == 1
 
@@ -107,8 +108,6 @@ class DialogueModule(naoqi.ALModule):
                 print("INF: Available languages: %s" %
                       languaguesAvailable)
 
-                # self.aup.setLanguage('English')
-
                 languagueInstalled = self.aup.getLanguage()
 
                 print("INF: Installed language: %s" %
@@ -128,10 +127,10 @@ class DialogueModule(naoqi.ALModule):
             print("ERR: Can't connect to Naoqi at ip \"" + self.strNaoIp + "\" on port " + str(ROBOT_PORT) + ".\n"
                   "Please check your script arguments. Run with -h option for help.")
 
-        if START_PROMPT:
-            # answer = self.encode(chatbot.respond(START_PROMPT))
-            answer = chatbot.respond(START_PROMPT)
-            self.aup.say(answer, languagueInstalled)
+        # if START_PROMPT:
+        #     # answer = self.encode(chatbot.respond(START_PROMPT))
+        #     answer = chatbot.respond(START_PROMPT)
+        #     self.aup.say(answer, languagueInstalled)
 
         self.listen(True)
         print('INF: Listening...')

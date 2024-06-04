@@ -34,13 +34,13 @@ class OaiClient:
         self.context = zmq.Context()
 
         self.log = None
-        if user:
-            logdir = os.getenv('LOGDIR')
-            if not os.path.isdir(logdir):
-                os.mkdir(logdir)
-            log = 'dialogue.%s.%s.log' % (
-                user, datetime.now().strftime("%Y-%m-%d_%H%M%S"))
-            self.log = open(os.path.join(logdir, log), 'a')
+        # if user:
+        #     logdir = os.getenv('LOGDIR')
+        #     if not os.path.isdir(logdir):
+        #         os.mkdir(logdir)
+        #     log = 'dialogue.%s.%s.log' % (
+        #         user, datetime.now().strftime("%Y-%m-%d_%H%M%S"))
+        #     self.log = open(os.path.join(logdir, log), 'a')
 
         sys.stdout.write("Connecting to OpenAI chatbot server... ")
         self.socket = self.context.socket(zmq.REQ)
