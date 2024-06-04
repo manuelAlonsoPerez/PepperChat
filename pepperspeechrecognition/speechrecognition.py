@@ -54,7 +54,6 @@ CALIBRATION_THRESHOLD_FACTOR = 1.5
 DEFAULT_LANGUAGE = "no-NO"
 
 
-
 # write the recorded audio to "out.wav" before sending it to google. intended for debugging purposes
 WRITE_WAV_FILE = False
 # prints the calculated RMS value to the console, useful for setting the threshold
@@ -295,7 +294,7 @@ class SpeechRecognitionModule(ALModule):
             print("INF: SpeechRecognitionModule.startRecording: already recording")
             return
 
-        print("INF: Starting to record audio")
+        print("\n -----------------------  INF: Starting to record audio  ------------------------------- \n")
 
         # start recording
         self.startRecordingTimestamp = 0
@@ -346,7 +345,9 @@ class SpeechRecognitionModule(ALModule):
 
         # start new worker thread to do the http call and some processing
         # copy slice to be thread safe!
+
         # TODO: make a job queue so we don't start a new thread for each recognition
+
         threading.Thread(target=self.recognize, args=(slice.copy(), )).start()
 
         # reset flag
@@ -390,8 +391,8 @@ class SpeechRecognitionModule(ALModule):
         return
 
     def setLanguage(self, language=DEFAULT_LANGUAGE):
+        print('\n\n - Google speech languague set to: ' + language + '\n\n')
         self.language = language
-        print 'SET: language set to ' + language
         return
 
     # used for RMS calculation
@@ -426,6 +427,7 @@ class SpeechRecognitionModule(ALModule):
 
         if (WRITE_WAV_FILE):
             # write to file
+            print("Writing to WAV file in recognize method")
             filename = "out" + str(self.fileCounter)
             self.fileCounter += 1
             outfile = open(filename + ".raw", "wb")
@@ -436,20 +438,23 @@ class SpeechRecognitionModule(ALModule):
         buffer = np.getbuffer(data)
 
         r = Recognizer()
+
         try:
+            print("Data sending to Google speech API for recognition.")
+
             result = r.recognize_google(
                 audio_data=buffer, samplerate=SAMPLE_RATE, language=self.language)
             self.memory.raiseEvent("SpeechRecognition", result)
-            print '---RESULT---: ' + result
+            print '\n\n ---RESULT returned from Google Speech ---: \n' + result + '\n\n'
         except UnknownValueError:
-            print 'ERR: Recognition error'
+            print '\n\n ERR: Recognition error of type when sending data to Google Speech \n\n'
             self.memory.raiseEvent("SpeechRecognition", "error")
         except RequestError, e:
-            print 'ERR: ' + str(e)
+            print '\n\n ERR: Recognition error of type UnknownValueError when sending data to Google Speech: \n' + str(e) + '\n\n'
         except socket.timeout:
-            print 'ERR: Socket timeout'
+            print '\n\n ERR: Socket timeout when sending data to Google Speech \n\n'
         except:
-            print 'ERR: Unknown, probably timeout ' + str(sys.exc_info()[0])
+            print '\n\n ERR: Unknown when sending data to Google Speech, probably due to timeout ' + str(sys.exc_info()[0] + '\n\n')
 
     def setAutoDetectionThreshold(self, threshold):
         self.autoDetectionThreshold = threshold

@@ -54,10 +54,14 @@ def main():
                               pport)       # parent broker port
 
     try:
+        # kill previous instance, useful for developing ;)
         print('Speech recognition debugging. # kill previous instance')
-        p = ALProxy("SpeechRecognition")
-        # p = ALProxy("ALMemory")
-        p.exit()  # kill previous instance, useful for developing ;)
+        
+        speechRecognitionProxy = ALProxy("SpeechRecognition")
+        speechRecognitionProxy.exit()
+        
+        alMemoryProxy = ALProxy("ALMemory")
+        alMemoryProxy.exit() 
 
     except Exception as error:
         print(
@@ -91,7 +95,7 @@ def main():
             time.sleep(1)
     except KeyboardInterrupt:
         print
-        print("Interrupted by user, shutting down")
+        print("\n\n -----------  Interrupted by user, shutting down  ---------- \n\n")
         myBroker.shutdown()
         sys.exit(0)
 
