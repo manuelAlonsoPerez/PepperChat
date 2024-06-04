@@ -40,8 +40,8 @@ class Recognizer:
     # supported content types: "audio/l16" (16 bit signed LPCM), "audio/flac"
     # samplerate must be at least 8kHz
 
-    def recognize_google(self, audio_data, samplerate, key=None, language="en-US", show_all=False, contentType="audio/l16"):
-    # def recognize_google(self, audio_data, samplerate, key=None, language="no-NO", show_all=False, contentType="audio/l16"):
+    # def recognize_google(self, audio_data, samplerate, key=None, language="en-US", show_all=False, contentType="audio/l16"):
+    def recognize_google(self, audio_data, samplerate, key=None, language="no-NO", show_all=False, contentType="audio/l16"):
         """
         Performs speech recognition on ``audio_data``, using the Google Speech Recognition API.
         The Google Speech Recognition API key is specified by ``key``. If not specified, it uses a generic key that works out of the box. This should generally be used for personal or testing purposes only, as it ** may be revoked by Google at any time**.
