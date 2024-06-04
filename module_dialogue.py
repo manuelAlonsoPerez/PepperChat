@@ -221,9 +221,7 @@ class DialogueModule(naoqi.ALModule):
         # received speech recognition result
         print(" ----- USER: " + message + '.\n')
 
-        languageOfQuestion = self.indentifyLanguage(message)
-
-        self.changeRobotLanguage(languageOfQuestion)
+        languageToAnswer = self.indentifyLanguage(message)
 
         # print('****************************** : point  5')
         answer = ""
@@ -268,9 +266,9 @@ class DialogueModule(naoqi.ALModule):
         # self.tablet.showInputTextDialog(
           #  "Answer: ", "Ok", "Cancel", answer, 300)
 
-        # print('****************************** : point  11')
+        # print('****************************** : point  11: Language to answer is %s' % languageToAnswer)
 
-        self.aup.say(answer)
+        self.aup.say(answer, languageToAnswer)
 
         # print('****************************** : point  12')
 
@@ -289,17 +287,30 @@ class DialogueModule(naoqi.ALModule):
         elif re.match(".*I.*(lie|lyi).*down.*", s):  # Lying down
             self.posture.goToPosture("LyingBack", 1.0)
 
-    def changeRobotLanguage(self, language):
+    def indentifyLanguage(self, text):
+        clasiffyResult = langid.classify(text)
+        textLanguage = clasiffyResult[0]
+
+        robotLanguage = 'Norwegian'
+
+        if language == "en":
+            robotLanguage = 'English'
+        
+        print('The language of the question sent was "%s",  preferences language will be set to %s' % (textLanguage, robotLanguage))
+
+        return robotLanguage
+
+    def getRobotPreferences(self, language):
 
         # Uncomment to debug prefferences sat on the Robot
         # Getting Robot preferences
 
-        # preferenceDomains = self.robotPereferences.getDomainList()
-        # print('\n\n Robot preference Domains: \n')
-        # printing the list using loop
+        preferenceDomains = self.robotPereferences.getDomainList()
+        print('\n\n Robot preference Domains: \n')
+        printing the list using loop
 
-        # for x in range(len(preferenceDomains)):
-        #     print(preferenceDomains[x] + ' ,')
+        for x in range(len(preferenceDomains)):
+            print(preferenceDomains[x] + ' ,')
 
         webPreferences = self.robotPereferences.getValueList(
             'com.aldebaran.robotwebpage')
@@ -322,28 +333,6 @@ class DialogueModule(naoqi.ALModule):
                 print('\nb')
                 for y in range(len(wizardPreferences[x]) - 1):
                     print(wizardPreferences[y])
-
-        robotLanguageWebPreference = 'Norwegian'
-
-        if language == "en":
-            robotLanguageWebPreference = 'English'
-        
-        print('The language of the question sendt was "%s",  preferences language will be set to %s' % (language, robotLanguageWebPreference))
-
-        self.robotPereferences.setValue(
-            'com.aldebaran.robotwebpage', 'ChosenLanguage', robotLanguageWebPreference)
-
-        # oldLanguage = self.aup.getLanguage()
-        # self.aup.setLanguage(robotLanguageWebPreference)
-        # newLanguage = self.aup.getLanguage()
-
-        # print("oldLanguage wasv %s  . New language is %s newLanguage" % (oldLanguage,newLanguage))
-
-    def indentifyLanguage(self, text):
-        clasiffyResult = langid.classify(text)
-        textLanguage = clasiffyResult[0]
-        print("The language for the given text is : %s  ." % textLanguage)
-        return textLanguage
 
 
 def main():
