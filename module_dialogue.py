@@ -34,8 +34,15 @@ MICROPHONE_SENSITIVITY = 0.05
 
 START_PROMPT = codecs.open(str(os.getenv('DIALOGUE_START_PROMPTFILE'), encoding='utf-8')
                            ).read() if os.path.isfile(str(os.getenv('DIALOGUE_START_PROMPTFILE'))) else None
-participantId = raw_input('Participant ID: ')
-ALIVE = int(participantId) % 2 == 1
+# participantId = raw_input('Participant ID: ')
+# ALIVE = int(participantId) % 2 == 1
+
+# ALAnimatedSpeech say method does not have the option to set up the language,
+# In case we want to Show the ALAnimatedSpeech remove the functionality of handling 
+# several languagues dinamically
+
+participantId = 1
+ALIVE = False
 
 chatbot = OaiClient(user=participantId)
 chatbot.reset()
@@ -64,8 +71,6 @@ class DialogueModule(naoqi.ALModule):
         self.stop()
 
     def start(self):
-        print("Module_dialogue.py start")
-
         self.configureSpeechRecognition()
 
         self.memory = naoqi.ALProxy("ALMemory", self.strNaoIp, ROBOT_PORT)
@@ -79,7 +84,7 @@ class DialogueModule(naoqi.ALModule):
         self.soundDetection = ALProxy(
             "ALSoundDetection",  self.strNaoIp, ROBOT_PORT)
         self.soundDetection.setParameter("Sensitivity", MICROPHONE_SENSITIVITY)
-        print("Microphone sensitivity set to %f" % MICROPHONE_SENSITIVITY)
+        print("INF: Microphone sensitivity set to %f" % MICROPHONE_SENSITIVITY)
 
         # Robot preferences Proxy for changing the language
         self.robotPereferences = ALProxy(
@@ -99,38 +104,37 @@ class DialogueModule(naoqi.ALModule):
                                    self.strNaoIp, ROBOT_PORT)
 
                 languaguesAvailable = self.aup.getAvailableLanguages()
-                print("**********************  Available languages: %s" %
+                print("INF: Available languages: %s" %
                       languaguesAvailable)
 
                 # self.aup.setLanguage('English')
 
                 languagueInstalled = self.aup.getLanguage()
 
-                print("**********************  Installed language: %s" %
+                print("INF: Installed language: %s" %
                       languagueInstalled)
 
                 voices = self.aup.getAvailableVoices()
-                print("**********************  Available voices: %s" % voices)
+                print("INF: Available voices: %s" % voices)
 
                 # self.aup.setVoice("naoenu")
                 # self.aup.setVoice("naomnc")
                 self.aup.setVoice("nora")
 
                 voice = self.aup.getVoice()
-                print("**********************  Voice installed: %s" % voice)
+                print("INF: Voice installed: %s" % voice)
 
         except RuntimeError:
-            print("Can't connect to Naoqi at ip \"" + self.strNaoIp + "\" on port " + str(ROBOT_PORT) + ".\n"
+            print("ERR: Can't connect to Naoqi at ip \"" + self.strNaoIp + "\" on port " + str(ROBOT_PORT) + ".\n"
                   "Please check your script arguments. Run with -h option for help.")
 
         if START_PROMPT:
             # answer = self.encode(chatbot.respond(START_PROMPT))
             answer = chatbot.respond(START_PROMPT)
-
-            print('\n ----Pepper Answering in %s \n' % languagueInstalled)
             self.aup.say(answer, languagueInstalled)
+
         self.listen(True)
-        print('Listening...')
+        print('INF: Listening...')
 
     def stop(self):
         print("INF: ReceiverModule: stopping...")
@@ -141,16 +145,11 @@ class DialogueModule(naoqi.ALModule):
         return "2.0"
 
     def configureSpeechRecognition(self):
-        print("Module_dialogue.py configureSpeechRecognition")
         self.speechRecognition = ALProxy("SpeechRecognition")
-
-        # self.speechRecognition.setLanguage("en-US")
-
-        # self.speechRecognition.calibrate()
 
         AUTODEC = True
         if (AUTODEC == False):
-            print("False, auto-detection not available")
+            print("INF: AUTODEC is False, auto-detection not available")
             # one-shot recording for at least 5 seconds
             self.speechRecognition = ALProxy("SpeechRecognition")
             self.speechRecognition.start()
@@ -159,11 +158,9 @@ class DialogueModule(naoqi.ALModule):
             self.speechRecognition.setIdleReleaseTime(1.7)
             self.speechRecognition.setMaxRecordingDuration(10)
             # self.speechRecognition.setLanguage("en-US")
-            # self.speechRecognition.setLanguage("no-NO")
-            # self.speechRecognition.setLanguage("nn-NO")
             # self.speechRecognition.startRecording()
         else:
-            print("True, auto-detection selected")
+            print("INF: AUTODEC is True, auto-detection selected")
             # auto-detection
             self.speechRecognition = ALProxy("SpeechRecognition")
             # self.speechRecognition.start()
@@ -173,8 +170,6 @@ class DialogueModule(naoqi.ALModule):
             self.speechRecognition.setMaxRecordingDuration(15)
             self.speechRecognition.setLookaheadDuration(0.5)
             # self.speechRecognition.setLanguage("en-US")
-            # self.speechRecognition.setLanguage("no-NO")
-            # self.speechRecognition.setLanguage("nn-NO")
             # self.speechRecognition.calibrate()
             self.speechRecognition.setAutoDetectionThreshold(6)
             # self.speechRecognition.startRecording()
@@ -182,7 +177,6 @@ class DialogueModule(naoqi.ALModule):
         self.listen(False)
 
     def listen(self, enable):
-        print("INF: Module_dialogue.py listen")
 
         if enable:
             self.speechRecognition.start()
@@ -194,42 +188,28 @@ class DialogueModule(naoqi.ALModule):
             self.speechRecognition.pause()
 
     def encode(self, s):
-        # print('****************************** : point  A')
-        # s = s.replace(u'å', 'a').replace(u'ä', 'a').replace(u'ö', 'o')
-        # s = s.replace(u'ø', 'oe').replace(u'æ', 'a')
         encodedString = codecs.encode(s, 'utf-8')
 
-        # print('****************************** : point  B')
-        # print('****************************** : %s' % encodedString)
-
         return encodedString
-        # return codecs.encode(s, 'ascii', 'ignore')
 
     def processRemote(self, signalName, message):
-        # print('****************************** : point  1')
         # message = self.encode(message)
-        # print('****************************** : point  2')
         # self.log.write('INP: ' + message + '\n')
 
         if message == 'error':
-            # print('****************************** : point  3')
-            print('Input not recognized, continue listen')
+            print('ERR: Input not recognized, continue listen')
             return
         self.listen(False)
-        # print('****************************** : point  4')
 
         # received speech recognition result
-        print(" ----- USER: " + message + '.\n')
+        print("\nUSER QUESTION: " + message + '.\n')
 
         languageToAnswer = self.indentifyLanguage(message)
 
-        # print('****************************** : point  5')
         answer = ""
 
         # computing answer
         if message == 'error':
-            # print('****************************** : point  6')
-
             self.misunderstandings += 1
 
             if self.misunderstandings == 1:
@@ -241,42 +221,32 @@ class DialogueModule(naoqi.ALModule):
             else:
                 answer = "Please repeat that."
 
-            # print('****************************** : point  7')
-
-            print('ERROR, DEFAULT ANSWER:\n'+answer)
+            print('ERR: DEFAULT ANSWER:\n'+answer)
 
         else:
-            # print('****************************** : point  8')
-
             chatGPTresponse = chatbot.respond(message)
-            # print('****************************** : point  9')
             # answer = chatGPTresponse
 
             answer = self.encode(chatGPTresponse)
 
-            # print('****************************** : point  10')
             self.misunderstandings = 0
 
-            print('---- ROBOT:\n' + answer + '\n')
+            print('\nROBOT ANSWER:' + answer + '\n')
 
         # text to speech the answer
-
         # self.log.write('ANS: ' + answer + '\n')
 
         # self.tablet.showInputTextDialog(
           #  "Answer: ", "Ok", "Cancel", answer, 300)
 
-        # print('****************************** : point  11: Language to answer is %s' % languageToAnswer)
-
-        self.aup.say(answer, languageToAnswer)
-
-        # print('****************************** : point  12')
+        if ALIVE:
+            configuration = {"language": languageToAnswer}
+            self.aup.say(answer, configuration)
+        else:
+            self.aup.say(answer, languageToAnswer)
 
         self.react(answer)
-
-        # print('****************************** : point  13')
         # time.sleep(2)
-
         self.listen(True)
 
     def react(self, s):
@@ -293,10 +263,10 @@ class DialogueModule(naoqi.ALModule):
 
         robotLanguage = 'Norwegian'
 
-        if language == "en":
+        if textLanguage == "en":
             robotLanguage = 'English'
         
-        print('The language of the question sent was "%s",  preferences language will be set to %s' % (textLanguage, robotLanguage))
+        print('INF: The language of the question was "%s",  robot language to answer is %s' % (textLanguage, robotLanguage))
 
         return robotLanguage
 
@@ -306,9 +276,9 @@ class DialogueModule(naoqi.ALModule):
         # Getting Robot preferences
 
         preferenceDomains = self.robotPereferences.getDomainList()
-        print('\n\n Robot preference Domains: \n')
-        printing the list using loop
-
+        print('\n\INF: Robot preference Domains:')
+        
+        #printing the list using loop
         for x in range(len(preferenceDomains)):
             print(preferenceDomains[x] + ' ,')
 
@@ -318,8 +288,8 @@ class DialogueModule(naoqi.ALModule):
         if (len(webPreferences) <= 0):
             return
         else:
+            print('\n\INF: Robot web page preferences')
             for x in range(len(webPreferences)):
-                print('\na')
                 for y in range(len(webPreferences[x])):
                     print(webPreferences[y])
 
@@ -329,8 +299,8 @@ class DialogueModule(naoqi.ALModule):
         if (len(wizardPreferences) <= 0):
             return
         else:
+            print('\n\INF: Robot wizard preferences')
             for x in range(len(wizardPreferences)):
-                print('\nb')
                 for y in range(len(wizardPreferences[x]) - 1):
                     print(wizardPreferences[y])
 
