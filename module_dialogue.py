@@ -202,8 +202,6 @@ class DialogueModule(naoqi.ALModule):
         # message = self.encode(message)
         # self.log.write('INP: ' + message + '\n')
 
-        self.tablet.hideDialog()
-
         if message == 'error':
             print('ERR: Input not recognized, continue listen')
             return
@@ -263,6 +261,7 @@ class DialogueModule(naoqi.ALModule):
 
         self.react(answer)
         # time.sleep(2)
+        self.tablet.hideDialog()
         self.listen(True)
 
     def react(self, s):
