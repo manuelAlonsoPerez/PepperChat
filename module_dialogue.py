@@ -202,6 +202,8 @@ class DialogueModule(naoqi.ALModule):
         # message = self.encode(message)
         # self.log.write('INP: ' + message + '\n')
 
+        self.tablet.hideDialog()
+
         if message == 'error':
             print('ERR: Input not recognized, continue listen')
             return
@@ -229,8 +231,8 @@ class DialogueModule(naoqi.ALModule):
 
         else:
             chatGPTresponse = chatbot.respond(message)
-            # answer = chatGPTresponse
 
+            # answer = chatGPTresponse
             answer = self.encode(chatGPTresponse)
 
             self.misunderstandings = 0
@@ -240,14 +242,24 @@ class DialogueModule(naoqi.ALModule):
         # text to speech the answer
         # self.log.write('ANS: ' + answer + '\n')
 
-        self.tablet.showInputTextDialog(
-            "Answer: ", "Ok", "Cancel", answer, 300)
+        # showInputTextDialog(const std: : string & title, const std: : string & ok, const std: : string & cancel)
+
+        title = 'Trykk en av knappene for å spørre igjen'
 
         if (self.languagesAvailable == 'norwegian&english'):
             languageToAnswer = self.indentifyLanguage(message)
+
+            if (languageToAnswer == 'English'):
+                title = 'Please press one of the puttons to ask again'
+
             self.aup.say(answer, languageToAnswer)
         else:
             self.aup.say(answer)
+
+        self.tablet.showInputTextDialog(
+            title, "Ok", "Cancel")
+
+        # self.tablet.onInputText()
 
         self.react(answer)
         # time.sleep(2)

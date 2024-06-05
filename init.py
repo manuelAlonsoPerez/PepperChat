@@ -21,9 +21,11 @@ else:
     DEFAULTS['OPENAI_KEY'] = raw_input('Specify your OpenAI account key >')
 
     AVAILABLE_LANGUAGES_NUMBER = raw_input(
-        '\n\nPlease select the Robot available languages:\n\n   1: Norwegian \n   2: Norwegian and English \n\n (1 or 2): ')
+        '\n\nPlease select the Robot available languages:\n\n   1: Norwegian \n   2: Norwegian and English \n\n (1 or 2):')
 
-    if (AVAILABLE_LANGUAGES_NUMBER == 2):
+    print('Available langs are: ' + AVAILABLE_LANGUAGES_NUMBER)
+
+    if (AVAILABLE_LANGUAGES_NUMBER == 2 or AVAILABLE_LANGUAGES_NUMBER == "2"):
         DEFAULTS['AVAILABLE_LANGUAGES'] = 'norwegian&english'
 
     with open(env, 'w') as f:
