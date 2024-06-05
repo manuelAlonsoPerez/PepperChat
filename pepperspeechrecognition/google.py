@@ -23,6 +23,7 @@
 
 from urllib import urlencode
 from urllib2 import Request, urlopen, URLError, HTTPError
+import os
 import json
 import socket
 
@@ -40,7 +41,12 @@ class Recognizer:
     # supported content types: "audio/l16" (16 bit signed LPCM), "audio/flac"
     # samplerate must be at least 8kHz
 
+    # availableLanguages = os.getenv('AVAILABLE_LANGUAGES')
+
+    # print('#INF: Available languages are: %s' % availableLanguages)
+
     # def recognize_google(self, audio_data, samplerate, key=None, language="en-US", show_all=False, contentType="audio/l16"):
+
     def recognize_google(self, audio_data, samplerate, key=None, language="no-NO", show_all=False, contentType="audio/l16"):
         """
         Performs speech recognition on ``audio_data``, using the Google Speech Recognition API.

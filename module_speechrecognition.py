@@ -56,12 +56,12 @@ def main():
     try:
         # kill previous instance, useful for developing ;)
         print('Speech recognition debugging. # kill previous instance')
-        
+
         speechRecognitionProxy = ALProxy("SpeechRecognition")
         speechRecognitionProxy.exit()
-        
+
         alMemoryProxy = ALProxy("ALMemory")
-        alMemoryProxy.exit() 
+        alMemoryProxy.exit()
 
     except Exception as error:
         print(

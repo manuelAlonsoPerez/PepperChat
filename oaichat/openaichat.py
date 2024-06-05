@@ -57,10 +57,11 @@ class OaiChat:
         self.history.append({'role': 'user', 'content': inputText})
         # print(self.history)
         response = self.client.chat.completions.create(
-            # Trained model in Manuel Account
-            #model="ft:gpt-3.5-turbo-1106:techedge:odaconference:9UwYgLwU",
-            # OTB model
+            # Trained model in Manuel Chatgpt integration
+            # model="gpt-3.5-turbo-1106:techedge:odawithspeaker:9WiXGDB8:ckpt-step-70",
+            # model="ft:gpt-3.5-turbo-1106:techedge:odaconference:9UuHntAI:ckpt-step-52",
             model="gpt-3.5-turbo-1106",
+            # OTB model
             # response_format={ "type": "json_object" },
             # user=self.user,
             messages=self.history,

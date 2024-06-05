@@ -39,8 +39,11 @@ MICROPHONE_SENSITIVITY = 0.05
 # ALIVE = int(participantId) % 2 == 1
 
 # ALAnimatedSpeech say method does not have the option to set up the language,
-# In case we want to Show the ALAnimatedSpeech remove the functionality of handling 
+# In case we want to Show the ALAnimatedSpeech remove the functionality of handling
 # several languagues dinamically
+
+# AVAILABLE_LANGUAGES_NUMBER = raw_input(
+#     '\n\nPlease select the Robot available languages:\n\n   1: Norwegian \n   2: Norwegian and English \n\n (1 or 2): ')
 
 participantId = 1
 ALIVE = False
@@ -72,6 +75,7 @@ class DialogueModule(naoqi.ALModule):
         self.stop()
 
     def start(self):
+
         self.configureSpeechRecognition()
 
         self.memory = naoqi.ALProxy("ALMemory", self.strNaoIp, ROBOT_PORT)
@@ -146,6 +150,9 @@ class DialogueModule(naoqi.ALModule):
     def configureSpeechRecognition(self):
         self.speechRecognition = ALProxy("SpeechRecognition")
 
+        self.languagesAvailable = os.getenv('AVAILABLE_LANGUAGES')
+        print('# INF: Languages available are %s' % self.languagesAvailable)
+
         AUTODEC = True
         if (AUTODEC == False):
             print("INF: AUTODEC is False, auto-detection not available")
@@ -203,8 +210,6 @@ class DialogueModule(naoqi.ALModule):
         # received speech recognition result
         print("\nUSER QUESTION: " + message + '.\n')
 
-        languageToAnswer = self.indentifyLanguage(message)
-
         answer = ""
 
         # computing answer
@@ -224,8 +229,8 @@ class DialogueModule(naoqi.ALModule):
 
         else:
             chatGPTresponse = chatbot.respond(message)
-            # answer = chatGPTresponse
 
+            # answer = chatGPTresponse
             answer = self.encode(chatGPTresponse)
 
             self.misunderstandings = 0
@@ -235,17 +240,28 @@ class DialogueModule(naoqi.ALModule):
         # text to speech the answer
         # self.log.write('ANS: ' + answer + '\n')
 
-        # self.tablet.showInputTextDialog(
-          #  "Answer: ", "Ok", "Cancel", answer, 300)
+        # showInputTextDialog(const std: : string & title, const std: : string & ok, const std: : string & cancel)
 
-        if ALIVE:
-            configuration = {"language": languageToAnswer}
-            self.aup.say(answer, configuration)
-        else:
+        title = 'Trykk en av knappene for å spørre igjen'
+
+        if (self.languagesAvailable == 'norwegian&english'):
+            languageToAnswer = self.indentifyLanguage(message)
+
+            if (languageToAnswer == 'English'):
+                title = 'Please press one of the puttons to ask again'
+
             self.aup.say(answer, languageToAnswer)
+        else:
+            self.aup.say(answer)
+
+        self.tablet.showInputTextDialog(
+            title, "Ok", "Cancel")
+
+        # self.tablet.onInputText()
 
         self.react(answer)
         # time.sleep(2)
+        self.tablet.hideDialog()
         self.listen(True)
 
     def react(self, s):
@@ -264,8 +280,9 @@ class DialogueModule(naoqi.ALModule):
 
         if textLanguage == "en":
             robotLanguage = 'English'
-        
-        print('INF: The language of the question was "%s",  robot language to answer is %s' % (textLanguage, robotLanguage))
+
+        print('INF: The language of the question was "%s",  robot language to answer is %s' % (
+            textLanguage, robotLanguage))
 
         return robotLanguage
 
@@ -276,8 +293,8 @@ class DialogueModule(naoqi.ALModule):
 
         preferenceDomains = self.robotPereferences.getDomainList()
         print('\n\INF: Robot preference Domains:')
-        
-        #printing the list using loop
+
+        # printing the list using loop
         for x in range(len(preferenceDomains)):
             print(preferenceDomains[x] + ' ,')
 
@@ -308,6 +325,7 @@ def main():
     """ Main entry point
     """
 
+    print('hi')
     parser = OptionParser()
     parser.add_option("--pip",
                       help="Parent broker port. The IP address or your robot",
