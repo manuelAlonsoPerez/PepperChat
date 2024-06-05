@@ -39,8 +39,11 @@ MICROPHONE_SENSITIVITY = 0.05
 # ALIVE = int(participantId) % 2 == 1
 
 # ALAnimatedSpeech say method does not have the option to set up the language,
-# In case we want to Show the ALAnimatedSpeech remove the functionality of handling 
+# In case we want to Show the ALAnimatedSpeech remove the functionality of handling
 # several languagues dinamically
+
+# AVAILABLE_LANGUAGES_NUMBER = raw_input(
+#     '\n\nPlease select the Robot available languages:\n\n   1: Norwegian \n   2: Norwegian and English \n\n (1 or 2): ')
 
 participantId = 1
 ALIVE = False
@@ -57,6 +60,11 @@ class DialogueModule(naoqi.ALModule):
     def __init__(self, strModuleName, strNaoIp):
         self.misunderstandings = 0
 
+        AVAILABLE_LANGUAGES = 2
+
+        print("INF: Number of languages available = %i" %
+              AVAILABLE_LANGUAGES)
+
         # self.log = codecs.open('dialogue.log', 'a', encoding='utf-8')
 
         try:
@@ -72,6 +80,7 @@ class DialogueModule(naoqi.ALModule):
         self.stop()
 
     def start(self):
+
         self.configureSpeechRecognition()
 
         self.memory = naoqi.ALProxy("ALMemory", self.strNaoIp, ROBOT_PORT)
@@ -264,8 +273,9 @@ class DialogueModule(naoqi.ALModule):
 
         if textLanguage == "en":
             robotLanguage = 'English'
-        
-        print('INF: The language of the question was "%s",  robot language to answer is %s' % (textLanguage, robotLanguage))
+
+        print('INF: The language of the question was "%s",  robot language to answer is %s' % (
+            textLanguage, robotLanguage))
 
         return robotLanguage
 
@@ -276,8 +286,8 @@ class DialogueModule(naoqi.ALModule):
 
         preferenceDomains = self.robotPereferences.getDomainList()
         print('\n\INF: Robot preference Domains:')
-        
-        #printing the list using loop
+
+        # printing the list using loop
         for x in range(len(preferenceDomains)):
             print(preferenceDomains[x] + ' ,')
 
