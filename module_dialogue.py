@@ -60,11 +60,6 @@ class DialogueModule(naoqi.ALModule):
     def __init__(self, strModuleName, strNaoIp):
         self.misunderstandings = 0
 
-        AVAILABLE_LANGUAGES = 2
-
-        print("INF: Number of languages available = %i" %
-              AVAILABLE_LANGUAGES)
-
         # self.log = codecs.open('dialogue.log', 'a', encoding='utf-8')
 
         try:
@@ -155,6 +150,9 @@ class DialogueModule(naoqi.ALModule):
     def configureSpeechRecognition(self):
         self.speechRecognition = ALProxy("SpeechRecognition")
 
+        self.languagesAvailable = os.getenv('AVAILABLE_LANGUAGES')
+        print('# INF: Languages available are %s' % self.languagesAvailable)
+
         AUTODEC = True
         if (AUTODEC == False):
             print("INF: AUTODEC is False, auto-detection not available")
@@ -212,8 +210,6 @@ class DialogueModule(naoqi.ALModule):
         # received speech recognition result
         print("\nUSER QUESTION: " + message + '.\n')
 
-        languageToAnswer = self.indentifyLanguage(message)
-
         answer = ""
 
         # computing answer
@@ -244,14 +240,14 @@ class DialogueModule(naoqi.ALModule):
         # text to speech the answer
         # self.log.write('ANS: ' + answer + '\n')
 
-        # self.tablet.showInputTextDialog(
-          #  "Answer: ", "Ok", "Cancel", answer, 300)
+        self.tablet.showInputTextDialog(
+            "Answer: ", "Ok", "Cancel", answer, 300)
 
-        if ALIVE:
-            configuration = {"language": languageToAnswer}
-            self.aup.say(answer, configuration)
-        else:
+        if (self.languagesAvailable == 'norwegian&english'):
+            languageToAnswer = self.indentifyLanguage(message)
             self.aup.say(answer, languageToAnswer)
+        else:
+            self.aup.say(answer)
 
         self.react(answer)
         # time.sleep(2)
@@ -318,6 +314,7 @@ def main():
     """ Main entry point
     """
 
+    print('hi')
     parser = OptionParser()
     parser.add_option("--pip",
                       help="Parent broker port. The IP address or your robot",

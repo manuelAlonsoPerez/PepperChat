@@ -41,9 +41,9 @@ class Recognizer:
     # supported content types: "audio/l16" (16 bit signed LPCM), "audio/flac"
     # samplerate must be at least 8kHz
 
-    availableLanguages = os.getenv('AVAILABLE_LANGUAGES')
+    # availableLanguages = os.getenv('AVAILABLE_LANGUAGES')
 
-    print('#INF: Available languages are: %s' % availableLanguages)
+    # print('#INF: Available languages are: %s' % availableLanguages)
 
     # def recognize_google(self, audio_data, samplerate, key=None, language="en-US", show_all=False, contentType="audio/l16"):
 

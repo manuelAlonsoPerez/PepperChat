@@ -7,7 +7,7 @@ print('Initiating PepperChat environment in %s' % env)
 
 DEFAULTS = {
     'LOGDIR': 'logs',
-    'AVAILABLE_LANGUAGES': 'norwegian'
+    'AVAILABLE_LANGUAGES': 'norwegian',
     'OPENAI_PROMPTFILE': 'openai.prompt',
     'CHATBOT_SERVER_ADDRESS': 'tcp://localhost:5556'
 }
